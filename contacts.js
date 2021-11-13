@@ -1,23 +1,42 @@
 const path = require('path');
 const fs = require('fs').promises;
+var uniqid = require('uniqid');
 
-const contactsPath = path.join(__dirname, 'contacts.json');
+const contactsPath = path.join(__dirname, 'db/contacts.json');
 
-function listContacts() {
-  // ...твой код
-}
+const listContacts = async () => {
+  const data = await fs.readFile(contactsPath);
+  const contactList = JSON.parse(data);
+  return contactList;
+};
 
-function getContactById(contactId) {
-  // ...твой код
-}
+const getContactById = async contactId => {
+  const contactList = await listContacts();
+  const contact = contactList.find(item => item.id === contactId);
+  if (!contact) {
+    return null;
+  }
+  return contact;
+};
 
-function removeContact(contactId) {
-  // ...твой код
-}
+const removeContact = async contactId => {
+  const contactList = await listContacts();
+  const contactIndex = contactList.findIndex(item => item.id === contactId);
+  if (contactIndex === -1) {
+    return null;
+  }
+  const deletedContact = contactList.splice(contactIndex, 1);
+  await fs.writeFile(contactsPath, JSON.stringify(contactList));
+  return deletedContact;
+};
 
-function addContact(name, email, phone) {
-  // ...твой код
-}
+const addContact = async (name, email, phone) => {
+  const contactList = await listContacts();
+  const newContact = { name, email, phone, id: uniqid() };
+  contactList.push(newContact);
+  await fs.writeFile(contactsPath, JSON.stringify(contactList));
+  return newContact;
+};
 
 module.exports = {
   listContacts,
